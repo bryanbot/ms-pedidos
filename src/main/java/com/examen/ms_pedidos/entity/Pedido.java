@@ -1,6 +1,8 @@
 package com.examen.ms_pedidos.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -16,6 +18,11 @@ public class Pedido {
     private Long id;
 
     private String cliente;
+    
+    @NotBlank(message = "El correo es obligatorio")
+    @Email(message = "Debe proporcionar un formato de correo válido")
+    private String correoCliente;
+    
     private Long productoId;
     private Integer cantidad;
     private BigDecimal precioUnitario;
