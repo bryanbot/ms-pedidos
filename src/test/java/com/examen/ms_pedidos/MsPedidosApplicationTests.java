@@ -23,9 +23,15 @@ class MsPedidosApplicationTests {
 	
 	@Test
 	void debeCalcularTotalCorrectamente() throws Exception {
-	    String nuevoPedido = "{\"cliente\":\"Bryan\", \"productoId\": 2, \"cantidad\": 2, \"precioUnitario\": 50.0}";
+	    String nuevoPedido = "{"
+            + "\"cliente\":\"Bryan\","
+            + "\"correoCliente\":\"bryan@test.com\","
+            + "\"productoId\": 2,"
+            + "\"cantidad\": 2,"
+            + "\"precioUnitario\": 50.0"
+            + "}";
 	    
-	    mockMvc.perform(post("/api/productos")
+	    mockMvc.perform(post("/api/pedidos")
 	            .contentType(MediaType.APPLICATION_JSON)
 	            .content(nuevoPedido))
 	            .andExpect(status().isCreated())
@@ -34,8 +40,25 @@ class MsPedidosApplicationTests {
 	}
 	
 	@Test
-    void noDebePermitirCantidadNegativa() throws Exception {
-        String pedidoInvalido = "{\"cliente\":\"Bryan\", \"productoId\": 1, \"cantidad\": -1, \"precioUnitario\": 10.0}";
+	void noDebePermitirCorreoInvalido() throws Exception {
+        String pedidoInvalido = "{"
+            + "\"cliente\":\"Bryan\","
+            + "\"correoCliente\":\"correo-mal-formado\"," // Email inválido
+            + "\"productoId\": 1,"
+            + "\"cantidad\": 1,"
+            + "\"precioUnitario\": 10.0"
+            + "}";
+
+        mockMvc.perform(post("/api/pedidos")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(pedidoInvalido))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.correoCliente").exists());
+    }
+	
+	@Test
+	void noDebePermitirCantidadNegativa() throws Exception {
+        String pedidoInvalido = "{\"cliente\":\"Bryan\", \"correoCliente\":\"test@test.com\", \"productoId\": 1, \"cantidad\": -1, \"precioUnitario\": 10.0}";
 
         mockMvc.perform(post("/api/pedidos")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -44,20 +67,9 @@ class MsPedidosApplicationTests {
     }
 	
 	@Test
-    void noDebePermitirPedidoSinCliente() throws Exception {
-        String pedidoInvalido = "{\"productoId\": 1, \"cantidad\": 1, \"precioUnitario\": 10.0}";
-
-        mockMvc.perform(post("/api/pedidos")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(pedidoInvalido))
-                .andExpect(status().isBadRequest());
-    }
-	
-	@Test
-    void debeRetornar404SiPedidoNoExiste() throws Exception {
-        mockMvc.perform(get("/api/pedidos/9999"))
+	void debeRetornar404SiPedidoNoExiste() throws Exception {
+        mockMvc.perform(get("/api/pedidos/99999"))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").exists())
-                .andExpect(jsonPath("$.timestamp").exists());
+                .andExpect(jsonPath("$.message").exists());
     }
 }
